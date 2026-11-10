@@ -41,7 +41,11 @@ class BubbleService : Service() {
             .setSmallIcon(R.drawable.ic_steve)
             .setOngoing(true)
             .build()
-        startForeground(1, notification)
+        if (Build.VERSION.SDK_INT >= 34) {
+            startForeground(1, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(1, notification)
+        }
     }
 
     private fun addBubble() {
