@@ -111,9 +111,19 @@ class BubbleService : Service() {
         bubble = view
     }
 
+    private fun appAuPremierPlan(): String {
+        val usm = getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+        val now = System.currentTimeMillis()
+        val stats = usm.queryUsageStats(android.app.usage.UsageStatsManager.INTERVAL_DAILY, now - 3_600_000L, now)
+        return stats.orEmpty()
+            .filter { it.packageName != packageName }
+            .maxByOrNull { it.lastTimeUsed }?.packageName ?: ""
+    }
+
     private fun openSimulation() {
         startActivity(
             Intent(this, PaymentSimulationActivity::class.java)
+                .putExtra(PaymentSimulationActivity.EXTRA_PACKAGE, appAuPremierPlan())
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         )
     }

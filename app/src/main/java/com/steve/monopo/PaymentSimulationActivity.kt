@@ -16,15 +16,9 @@ import android.widget.TextView
 
 class PaymentSimulationActivity : Activity() {
 
-    private data class Produit(val nom: String, val prix: Int)
-
-    private val produits = listOf(
-        Produit("Pack de 100 pièces", 500),
-        Produit("Pack de 500 pièces", 2000),
-        Produit("Abonnement mensuel Premium", 1500),
-        Produit("Amélioration niveau 2", 1000),
-        Produit("Supprimer les publicités", 3000)
-    )
+    companion object {
+        const val EXTRA_PACKAGE = "package"
+    }
 
     private lateinit var listeEcran: ScrollView
     private lateinit var paiementEcran: LinearLayout
@@ -33,12 +27,20 @@ class PaymentSimulationActivity : Activity() {
     private lateinit var retourButton: Button
     private lateinit var progress: ProgressBar
     private lateinit var statut: TextView
-    private var produitChoisi: Produit? = null
+    private var articleChoisi: Article? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val dp = resources.displayMetrics.density
         fun px(v: Int) = (v * dp).toInt()
+
+        val pkg = intent.getStringExtra(EXTRA_PACKAGE) ?: ""
+        val nomApp = try {
+            packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+        } catch (e: Exception) {
+            "Achat"
+        }
+        val articles = AppCatalog.articles(this, pkg)
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -48,14 +50,21 @@ class PaymentSimulationActivity : Activity() {
 
         val liste = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         liste.addView(TextView(this).apply {
-            text = "Choisis un article (SIMULATION)"
+            text = "$nomApp (SIMULATION)"
             textSize = 20f
             setTextColor(Color.BLACK)
         })
-        produits.forEach { p ->
+        if (articles.isEmpty()) {
+            liste.addView(TextView(this).apply {
+                text = "Aucun article. Ouvre Monopo et synchronise cette application."
+                textSize = 15f
+                setTextColor(Color.GRAY)
+            })
+        }
+        articles.forEach { a ->
             liste.addView(Button(this).apply {
-                text = "${p.nom}\n${formatPrix(p.prix)} FCFA"
-                setOnClickListener { afficherPaiement(p) }
+                text = "${a.nom}\n${formatPrix(a.prix)} FCFA"
+                setOnClickListener { afficherPaiement(a) }
             })
         }
         listeEcran = ScrollView(this).apply { addView(liste) }
@@ -98,10 +107,10 @@ class PaymentSimulationActivity : Activity() {
         setContentView(root)
     }
 
-    private fun afficherPaiement(p: Produit) {
-        produitChoisi = p
-        titrePaiement.text = "${p.nom} : ${formatPrix(p.prix)} FCFA"
-        payButton.text = "Payer ${formatPrix(p.prix)} FCFA"
+    private fun afficherPaiement(a: Article) {
+        articleChoisi = a
+        titrePaiement.text = "${a.nom} : ${formatPrix(a.prix)} FCFA"
+        payButton.text = "Payer ${formatPrix(a.prix)} FCFA"
         payButton.isEnabled = true
         payButton.setOnClickListener { payer() }
         retourButton.visibility = View.VISIBLE
@@ -118,7 +127,7 @@ class PaymentSimulationActivity : Activity() {
     }
 
     private fun payer() {
-        val p = produitChoisi ?: return
+        val a = articleChoisi ?: return
         payButton.isEnabled = false
         retourButton.isEnabled = false
         progress.visibility = View.VISIBLE
@@ -126,7 +135,7 @@ class PaymentSimulationActivity : Activity() {
         Handler(Looper.getMainLooper()).postDelayed({
             progress.visibility = View.GONE
             statut.setTextColor(Color.parseColor("#2E7D32"))
-            statut.text = "Paiement approuvé (simulé)\n${p.nom} : ${formatPrix(p.prix)} FCFA\nRéf : SIM-${System.currentTimeMillis() % 100000}"
+            statut.text = "Paiement approuvé (simulé)\n${a.nom} : ${formatPrix(a.prix)} FCFA\nRéf : SIM-${System.currentTimeMillis() % 100000}"
             retourButton.visibility = View.GONE
             payButton.text = "Fermer"
             payButton.isEnabled = true

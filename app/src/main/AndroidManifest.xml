@@ -4,6 +4,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
         android:label="Monopo"
@@ -17,7 +19,12 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".PaymentSimulationActivity" android:exported="false" />
+        <activity android:name=".AppPickerActivity" android:exported="false" />
+
+        <activity
+            android:name=".PaymentSimulationActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.DeviceDefault.Dialog" />
 
         <service
             android:name=".BubbleService"

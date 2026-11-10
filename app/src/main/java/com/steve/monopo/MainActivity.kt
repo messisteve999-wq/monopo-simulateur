@@ -39,6 +39,14 @@ class MainActivity : Activity() {
                 stopService(Intent(this@MainActivity, BubbleService::class.java))
             }
         })
+        layout.addView(Button(this).apply {
+            text = "Synchroniser une application"
+            setOnClickListener { startActivity(Intent(this@MainActivity, AppPickerActivity::class.java)) }
+        })
+        layout.addView(Button(this).apply {
+            text = "Autoriser la détection des applis"
+            setOnClickListener { startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }
+        })
         setContentView(layout)
     }
 
